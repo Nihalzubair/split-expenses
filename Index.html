@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Split Expenses</title>
+
+<style>
+:root {
+    --bg:#f5f5f5;
+    --card:#fff;
+    --text:#111;
+    --muted:#666;
+    --border:#ddd;
+    --accent:#111;
+    --pay-bg:#fff3f3;
+    --toggle-bg:#ccc;
+    --positive:#16a34a;
+    --negative:#dc2626;
+}
+body.dark {
+    --bg:#0f0f0f;
+    --card:#1a1a1a;
+    --text:#f5f5f5;
+    --muted:#aaa;
+    --border:#333;
+    --accent:#fff;
+    --pay-bg:#2a1a1a;
+    --toggle-bg:#444;
+}
+
+body {
+    margin:0;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:var(--bg);
+    font-family:system-ui,sans-serif;
+    color:var(--text);
+}
+
+.card {
+    width:100%;
+    max-width:420px;
+    background:var(--card);
+    padding:20px;
+    border-radius:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,.1);
+}
+
+.header {
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:14px;
+}
+
+h2 { margin:0;font-size:18px }
+
+.switch { width:54px;height:28px;position:relative }
+.switch input { display:none }
+.slider {
+    position:absolute;inset:0;
+    background:var(--toggle-bg);
+    border-radius:30px;
+    cursor:pointer;
+}
+.slider::before {
+    content:"☀️";
+    position:absolute;
+    width:22px;height:22px;
+    left:3px;top:3px;
+    background:#fff;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:12px;
+    transition:.3s;
+}
+input:checked + .slider::before {
+    transform:translateX(26px);
+    content:"🌙";
+}
+
+select,input {
+    width:100%;
+    padding:10px;
+    border-radius:12px;
+    border:1px solid var(--border);
+    background:transparent;
+    color:var(--text);
+    margin-bottom:8px;
+}
+
+.friend { display:flex;gap:8px }
+
+button {
+    width:100%;
+    padding:12px;
+    border-radius:14px;
+    border:none;
+    background:var(--accent);
+    color:var(--bg);
+    font-size:15px;
+    cursor:pointer;
+    margin-top:10px;
+}
+button.secondary {
+    background:transparent;
+    border:1px solid var(--border);
+    color:var(--text);
+}
+
+.result { margin-top:16px;font-size:14px }
+.meta { text-align:center;color:var(--muted);margin-bottom:10px }
+
+table {
+    width:100%;
+    border-collapse:collapse;
+    margin-bottom:12px;
+}
+th,td {
+    padding:8px 0;
+    border-bottom:1px solid var(--border);
+    text-align:left;
+}
+th { color:var(--muted) }
+
+.positive { color:var(--positive) }
+.negative { color:var(--negative) }
+
+.pay {
+    background:var(--pay-bg);
+    padding:10px;
+    border-radius:12px;
+    margin-bottom:8px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<div class="header">
+    <h2>Split Expenses</h2>
+    <label class="switch">
+        <input type="checkbox" id="darkToggle">
+        <span class="slider"></span>
+    </label>
+</div>
+
+<select id="currency">
+    <option>QAR</option>
+    <option>USD</option>
+    <option>EUR</option>
+    <option>GBP</option>
+    <option>INR</option>
+</select>
+
+<div id="friends"></div>
+
+<button class="secondary" onclick="addFriend()">+ Add person</button>
+
+<div class="result" id="summary"></div>
+<div class="result" id="result"></div>
+
+</div>
+
+<script>
+const friendsDiv = document.getElementById("friends");
+const darkToggle = document.getElementById("darkToggle");
+const currencySelect = document.getElementById("currency");
+const summaryDiv = document.getElementById("summary");
+const resultDiv = document.getElementById("result");
+
+const round = n => Math.round(n * 100) / 100;
+
+/* Theme */
+(function(){
+    const saved = JSON.parse(localStorage.getItem("theme"));
+    if(saved !== null){
+        document.body.classList.toggle("dark", saved);
+        darkToggle.checked = saved;
+    } else if(matchMedia("(prefers-color-scheme: dark)").matches){
+        document.body.classList.add("dark");
+        darkToggle.checked = true;
+    }
+})();
+darkToggle.onchange = () => {
+    document.body.classList.toggle("dark");
+    localStorage.setItem("theme", document.body.classList.contains("dark"));
+};
+
+/* Auto recalculation + auto add */
+function attachRealtime(el){
+    el.addEventListener("input", () => {
+        calculate();
+        autoAddRow();
+    });
+}
+
+/* Add Friend */
+function addFriend(name="",amount=""){
+    const d=document.createElement("div");
+    d.className="friend";
+
+    const nameInput=document.createElement("input");
+    nameInput.placeholder="Name";
+    nameInput.value=name;
+
+    const amountInput=document.createElement("input");
+    amountInput.type="number";
+    amountInput.placeholder="Amount";
+    amountInput.value=amount;
+
+    attachRealtime(nameInput);
+    attachRealtime(amountInput);
+
+    d.append(nameInput,amountInput);
+    friendsDiv.appendChild(d);
+}
+
+/* Auto add new row when last is filled */
+function autoAddRow(){
+    const rows=document.querySelectorAll(".friend");
+    const last=rows[rows.length-1];
+    if(!last) return;
+
+    const name=last.children[0].value.trim();
+    const amt=last.children[1].value.trim();
+
+    if(name && amt){
+        addFriend();
+    }
+}
+
+/* Currency */
+currencySelect.addEventListener("change", calculate);
+
+/* Calculation */
+function calculate(){
+    const currency=currencySelect.value;
+    let people=[], total=0;
+
+    document.querySelectorAll(".friend").forEach(r=>{
+        const name=r.children[0].value.trim();
+        const amt=round(parseFloat(r.children[1].value));
+        if(name && !isNaN(amt)){
+            people.push({name,amount:amt});
+            total+=amt;
+        }
+    });
+
+    if(!people.length){
+        summaryDiv.innerHTML="";
+        resultDiv.innerHTML="";
+        return;
+    }
+
+    total=round(total);
+    const share=round(total/people.length);
+
+    let payers=[], receivers=[];
+
+    let table=`
+        <div class="meta">Who owes / receives</div>
+        <table>
+        <tr>
+            <th>Person</th>
+            <th>Paid</th>
+            <th>Each</th>
+            <th>Diff</th>
+        </tr>
+    `;
+
+    people.forEach(p=>{
+        const diff=round(p.amount-share);
+        if(diff>0) receivers.push({name:p.name,amount:diff});
+        if(diff<0) payers.push({name:p.name,amount:-diff});
+
+        table+=`
+        <tr>
+            <td>${p.name}</td>
+            <td>${p.amount.toFixed(2)}</td>
+            <td>${share.toFixed(2)}</td>
+            <td class="${diff>0?"positive":diff<0?"negative":""}">
+                ${diff>0?"+":""}${diff.toFixed(2)}
+            </td>
+        </tr>`;
+    });
+
+    table+="</table>";
+    summaryDiv.innerHTML=table;
+
+    let result=`
+        <div class="meta">
+            Total ${total.toFixed(2)} ${currency} · Each ${share.toFixed(2)} ${currency}
+        </div>
+    `;
+
+    let i=0,j=0;
+    while(i<payers.length && j<receivers.length){
+        const amt=Math.min(payers[i].amount,receivers[j].amount);
+        result+=`
+            <div class="pay">
+                ${payers[i].name} → ${receivers[j].name} : ${amt.toFixed(2)} ${currency}
+            </div>`;
+        payers[i].amount-=amt;
+        receivers[j].amount-=amt;
+        if(payers[i].amount<=0.01) i++;
+        if(receivers[j].amount<=0.01) j++;
+    }
+    resultDiv.innerHTML=result;
+}
+
+/* Init */
+addFriend();
+</script>
+
+</body>
+</html>
