@@ -6,789 +6,1533 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Split">
-<meta name="theme-color" content="#1a1916">
+<meta name="theme-color" content="#f7f4ef" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1a1410" media="(prefers-color-scheme: dark)">
+<meta name="description" content="Split expenses between friends easily">
+<link rel="manifest" href="manifest.json">
 <title>Split — Expense Splitter</title>
+
+<!-- Inline SVG favicon -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23c0451e'/%3E%3Crect x='14' y='10' width='36' height='44' rx='3' fill='white'/%3E%3Crect x='20' y='20' width='24' height='2.5' rx='1.25' fill='%23c0451e'/%3E%3Crect x='20' y='27' width='18' height='2.5' rx='1.25' fill='%23c0451e'/%3E%3Crect x='20' y='34' width='21' height='2.5' rx='1.25' fill='%23c0451e'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='40' fill='%23c0451e'/%3E%3Crect x='40' y='28' width='100' height='124' rx='8' fill='white'/%3E%3Crect x='56' y='56' width='68' height='7' rx='3.5' fill='%23c0451e'/%3E%3Crect x='56' y='76' width='50' height='7' rx='3.5' fill='%23c0451e'/%3E%3Crect x='56' y='96' width='58' height='7' rx='3.5' fill='%23c0451e'/%3E%3C/svg%3E">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
 <style>
+/* ══════════════════════════════════════════
+   DESIGN TOKENS — Light & Dark
+══════════════════════════════════════════ */
 :root {
-  --bg: #f5f3ef;
-  --surface: #ffffff;
-  --surface2: #f0ede8;
-  --text: #111009;
-  --text2: #6b6456;
-  --text3: #b0a89a;
-  --border: #e0dbd2;
-  --accent: #d4522a;
-  --green: #2a7a4f;
-  --shadow-sm: 0 1px 4px rgba(0,0,0,0.07);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.09);
-  --r: 18px;
-  --rs: 12px;
+  --bg:        #f7f4ef;
+  --bg2:       #eee9e1;
+  --surface:   #ffffff;
+  --surface2:  #f3efe8;
+  --text:      #1a1410;
+  --text2:     #6b5f52;
+  --text3:     #b8aea1;
+  --border:    #e4ddd3;
+  --accent:    #c0451e;
+  --accent-l:  #fdf0ec;
+  --accent-m:  #f5c4b2;
+  --green:     #1f6e42;
+  --green-l:   #eaf4ee;
+  --green-m:   #a8d9bc;
+  --shadow-xs: 0 1px 3px rgba(0,0,0,.06);
+  --shadow-sm: 0 2px 8px rgba(0,0,0,.08);
+  --shadow-md: 0 6px 24px rgba(0,0,0,.10);
+  --r:  20px;
+  --rs: 14px;
+  --safe-top:    env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left:   env(safe-area-inset-left, 0px);
+  --safe-right:  env(safe-area-inset-right, 0px);
 }
-body.dark {
-  --bg: #111009;
-  --surface: #1a1916;
-  --surface2: #222019;
-  --text: #f0ede8;
-  --text2: #8a806f;
-  --text3: #504840;
-  --border: #2e2a22;
-  --accent: #e8764a;
-  --green: #2d8a58;
-  --shadow-sm: 0 1px 4px rgba(0,0,0,0.3);
-  --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html{-webkit-text-size-adjust:100%}
-body{
-  min-height:100vh;
-  background:var(--bg);
-  font-family:'Sora',-apple-system,sans-serif;
-  color:var(--text);
-  -webkit-font-smoothing:antialiased;
-  padding-top:env(safe-area-inset-top,0px);
-  padding-bottom:calc(env(safe-area-inset-bottom,0px) + 32px);
-  transition:background .3s,color .3s;
-}
-
-/* ── INSTALL BANNER ── */
-#installBanner{
-  display:none;
-  background:#111009;
-  color:#f0ede8;
-  padding:14px 14px 14px 14px;
-  padding-top:calc(env(safe-area-inset-top,0px) + 12px);
-  gap:12px;
-  align-items:flex-start;
-  border-bottom:1px solid rgba(255,255,255,0.08);
-  position:relative;
-}
-#installBanner.visible{ display:flex; }
-.ib-icon{
-  width:44px;height:44px;flex-shrink:0;
-  background:var(--accent);border-radius:11px;
-  display:flex;align-items:center;justify-content:center;font-size:20px;
-}
-.ib-body{flex:1;min-width:0}
-.ib-title{font-size:13px;font-weight:700;margin-bottom:5px}
-.ib-step{font-size:11.5px;color:rgba(240,237,232,0.7);line-height:1.5;margin-bottom:2px;display:flex;gap:6px}
-.ib-step b{color:#fff}
-.ib-close{
-  position:absolute;top:calc(env(safe-area-inset-top,0px) + 10px);right:12px;
-  width:32px;height:32px;border-radius:50%;
-  background:rgba(255,255,255,0.12);border:none;
-  color:#fff;font-size:20px;line-height:1;
-  display:flex;align-items:center;justify-content:center;
-  cursor:pointer;padding:0;
-  /* big touch target */
-  -webkit-appearance:none;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:        #1a1410;
+    --bg2:       #231e18;
+    --surface:   #2a2319;
+    --surface2:  #332b20;
+    --text:      #f3efe8;
+    --text2:     #c9bfb5;
+    --text3:     #7a6f65;
+    --border:    #3d342a;
+    --accent:    #e05a30;
+    --accent-l:  #2d1a12;
+    --accent-m:  #6b2d16;
+    --green:     #4ade80;
+    --green-l:   #0d2318;
+    --green-m:   #1a5c32;
+    --shadow-xs: 0 1px 3px rgba(0,0,0,.3);
+    --shadow-sm: 0 2px 8px rgba(0,0,0,.4);
+    --shadow-md: 0 6px 24px rgba(0,0,0,.5);
+  }
 }
 
-/* ── HOW TO USE BANNER ── */
-.how-banner{
-  background:var(--surface);border:1.5px solid var(--border);
-  border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-sm);
-  position:relative;
+/* ══════════════════════════════════════════
+   RESET & BASE
+══════════════════════════════════════════ */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0; padding: 0;
+  -webkit-tap-highlight-color: transparent;
 }
-.how-banner.gone{display:none}
-.how-head{
-  display:flex;align-items:center;gap:10px;
-  padding:12px 14px 10px;border-bottom:1px solid var(--border);
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overflow-x: hidden;
 }
-.how-head-icon{font-size:16px}
-.how-head-title{font-size:13px;font-weight:700;flex:1;letter-spacing:-.2px}
-.how-dismiss{
-  width:30px;height:30px;border-radius:50%;border:none;
-  background:var(--surface2);color:var(--text3);
-  font-size:17px;line-height:1;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;-webkit-appearance:none;min-width:30px;
-}
-.how-steps{padding:10px 14px 13px;display:flex;flex-direction:column;gap:7px}
-.how-step{display:flex;align-items:flex-start;gap:10px}
-.how-num{
-  width:20px;height:20px;border-radius:50%;background:var(--accent);
-  color:#fff;font-size:10px;font-weight:700;
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;
-}
-.how-text{font-size:12.5px;color:var(--text2);line-height:1.45}
-.how-text b{color:var(--text);font-weight:600}
-
-/* ── WRAP ── */
-.wrap{max-width:430px;margin:0 auto;padding:14px 12px 20px;display:flex;flex-direction:column;gap:11px}
-
-/* ── TOPBAR ── */
-.topbar{display:flex;align-items:center;justify-content:space-between;padding:2px 0}
-.logo{display:flex;align-items:center;gap:10px}
-.logo-icon{width:36px;height:36px;background:var(--accent);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 3px 10px rgba(212,82,42,.3)}
-.logo-name{font-size:17px;font-weight:700;letter-spacing:-.5px}
-.logo-sub{font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-top:1px}
-.theme-btn{
-  padding:7px 12px;border-radius:20px;border:1.5px solid var(--border);
-  background:var(--surface);color:var(--text2);font-size:13px;
-  cursor:pointer;box-shadow:var(--shadow-sm);
-  -webkit-appearance:none;
+body {
+  min-height: 100vh;
+  min-height: 100dvh; /* dynamic viewport height — fixes Safari bar */
+  background: var(--bg);
+  font-family: 'Sora', -apple-system, sans-serif;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  /* Safe-area padding — bottom accounts for home indicator + extra buffer */
+  padding-top: var(--safe-top);
+  padding-bottom: calc(var(--safe-bottom) + 48px);
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
 }
 
-/* ── SESSION BAR ── */
-.session-bar{display:flex;gap:8px}
-.session-bar input{
-  flex:1;padding:12px 13px;border-radius:var(--rs);
-  border:1.5px solid var(--border);background:var(--surface);
-  color:var(--text);font-family:'Sora',sans-serif;font-size:13px;font-weight:500;
-  outline:none;box-shadow:var(--shadow-sm);-webkit-appearance:none;
+/* ══════════════════════════════════════════
+   INSTALL BANNER
+══════════════════════════════════════════ */
+#installBanner {
+  display: none;
+  background: #1a1410;
+  color: #f3efe8;
+  padding: 14px 14px 14px 14px;
+  padding-top: calc(var(--safe-top) + 12px);
+  gap: 12px;
+  align-items: flex-start;
+  position: relative;
+  /* GPU layer for smooth rendering */
+  will-change: transform;
 }
-.session-bar input:focus{border-color:var(--accent)}
-.session-bar input::placeholder{color:var(--text3);font-weight:400}
-.currency-sel{
-  padding:0 28px 0 10px;border-radius:var(--rs);
-  border:1.5px solid var(--border);background:var(--surface);
-  color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;
-  outline:none;cursor:pointer;-webkit-appearance:none;box-shadow:var(--shadow-sm);
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23a89f93' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 8px center;
+#installBanner.visible { display: flex; }
+.ib-icon {
+  width: 44px; height: 44px; flex-shrink: 0;
+  background: var(--accent); border-radius: 11px;
+  display: flex; align-items: center; justify-content: center; font-size: 20px;
 }
-
-/* ── SUMMARY ── */
-.summary{
-  background:var(--surface);border:1.5px solid var(--border);
-  border-radius:var(--rs);padding:11px 14px;
-  display:flex;align-items:center;justify-content:space-between;
-  box-shadow:var(--shadow-sm);transition:border-color .25s;
+.ib-body { flex: 1; min-width: 0; }
+.ib-title { font-size: 13px; font-weight: 700; margin-bottom: 5px; }
+.ib-step {
+  font-size: 11.5px; color: rgba(243,239,232,.65);
+  line-height: 1.5; margin-bottom: 2px; display: flex; gap: 6px;
 }
-.summary.live{border-color:var(--accent)}
-.sum-label{font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:2px}
-.sum-total{font-size:18px;font-family:'JetBrains Mono',monospace;font-weight:500;color:var(--text);letter-spacing:-.5px}
-.sum-total.live{color:var(--accent)}
-.sum-chips{display:none;gap:8px}
-.sum-chips.show{display:flex}
-.sum-chip{background:var(--surface2);border-radius:8px;padding:4px 9px;text-align:center}
-.sum-chip-l{font-size:8px;font-family:'JetBrains Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
-.sum-chip-v{font-size:11px;font-family:'JetBrains Mono',monospace;font-weight:500;color:var(--text);margin-top:1px}
-
-/* ── SECTION HEADER ── */
-.sec-head{display:flex;align-items:center;justify-content:space-between;padding:0 2px}
-.sec-label{font-size:10px;font-family:'JetBrains Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:.6px}
-.add-person-btn{
-  display:flex;align-items:center;gap:5px;
-  background:var(--accent);color:#fff;border:none;
-  padding:8px 14px;border-radius:20px;cursor:pointer;
-  font-family:'Sora',sans-serif;font-size:12px;font-weight:600;
-  box-shadow:0 3px 10px rgba(212,82,42,.3);
-  -webkit-appearance:none;
-  /* minimum 44px touch target */
-  min-height:44px;
+.ib-step b { color: #fff; }
+.ib-close {
+  position: absolute; top: calc(var(--safe-top) + 10px); right: 12px;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255,255,255,.12); border: none; color: #fff; font-size: 20px;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+  touch-action: manipulation;
 }
 
-/* ── PEOPLE LIST ── */
-#peopleList{display:flex;flex-direction:column;gap:10px}
+/* ══════════════════════════════════════════
+   HOW-TO BANNER
+══════════════════════════════════════════ */
+.how-banner {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--r); overflow: hidden; box-shadow: var(--shadow-sm);
+}
+.how-banner.gone { display: none; }
+.how-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 13px 15px 11px; border-bottom: 1px solid var(--border);
+}
+.how-head-icon { font-size: 16px; }
+.how-head-title { font-size: 13px; font-weight: 700; flex: 1; letter-spacing: -.2px; }
+.how-dismiss {
+  width: 36px; height: 36px; border-radius: 50%; border: none;
+  background: var(--surface2); color: var(--text3); font-size: 16px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  touch-action: manipulation;
+}
+.how-steps { padding: 11px 15px 14px; display: flex; flex-direction: column; gap: 8px; }
+.how-step { display: flex; align-items: flex-start; gap: 11px; }
+.how-num {
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--accent); color: #fff; font-size: 10px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+}
+.how-text { font-size: 12.5px; color: var(--text2); line-height: 1.5; }
+.how-text b { color: var(--text); font-weight: 600; }
 
-/* ── PERSON CARD ── */
-@keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
-.pc{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-sm)}
-.pc.new{animation:slideIn .25s cubic-bezier(.34,1.56,.64,1)}
-.pc-head{display:flex;align-items:center;border-bottom:1px solid var(--border)}
-.pc-avatar{width:44px;height:44px;flex-shrink:0;background:var(--surface2);border-right:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px}
-.pc-name{
-  flex:1;padding:0 11px;height:44px;
-  background:transparent;border:none;outline:none;
-  color:var(--text);font-family:'Sora',sans-serif;font-size:14px;font-weight:600;
-  -webkit-appearance:none;min-width:0;
+/* ══════════════════════════════════════════
+   LAYOUT
+══════════════════════════════════════════ */
+.wrap {
+  max-width: 480px; margin: 0 auto;
+  padding: 16px 14px 24px;
+  display: flex; flex-direction: column; gap: 12px;
 }
-.pc-name::placeholder{color:var(--text3);font-weight:400}
-.pc-sub{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;color:var(--accent);padding:0 8px;white-space:nowrap;flex-shrink:0}
-.pc-del{
-  width:44px;height:44px;flex-shrink:0;background:transparent;
-  border:none;border-left:1px solid var(--border);
-  color:var(--text3);cursor:pointer;font-size:18px;
-  display:flex;align-items:center;justify-content:center;
-  -webkit-appearance:none;
+@media (min-width: 600px) {
+  .wrap { padding: 24px 20px 32px; }
 }
-
-/* ── EXPENSE ROWS ── */
-.exp-row{display:flex;align-items:center;border-bottom:1px solid var(--border)}
-.exp-row:last-of-type{border-bottom:none}
-.exp-desc{
-  flex:1.3;padding:10px 11px;background:transparent;border:none;outline:none;
-  color:var(--text);font-family:'Sora',sans-serif;font-size:12px;
-  border-right:1px solid var(--border);-webkit-appearance:none;min-width:0;
-}
-.exp-desc::placeholder{color:var(--text3)}
-.exp-amt{
-  flex:0.9;padding:10px 11px;background:transparent;border:none;outline:none;
-  color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;
-  border-right:1px solid var(--border);-webkit-appearance:none;-moz-appearance:textfield;min-width:0;
-}
-.exp-amt::-webkit-outer-spin-button,.exp-amt::-webkit-inner-spin-button{-webkit-appearance:none}
-.exp-amt::placeholder{color:var(--text3);font-family:'Sora',sans-serif;font-size:12px}
-.exp-del{
-  width:44px;height:44px;background:transparent;border:none;
-  color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;
-  font-size:17px;flex-shrink:0;-webkit-appearance:none;
-}
-.add-exp-btn{
-  width:100%;padding:10px 12px;background:transparent;border:none;border-top:1px solid var(--border);
-  color:var(--text3);cursor:pointer;font-family:'Sora',sans-serif;font-size:12px;text-align:left;
-  -webkit-appearance:none;min-height:40px;
+@media (min-width: 900px) {
+  .wrap { max-width: 520px; padding: 32px 0; }
 }
 
-/* ── ACTION BAR ── */
-.action-bar{display:flex;gap:8px}
-.act-btn{
-  flex:1;padding:12px;border-radius:var(--rs);
-  border:1.5px solid var(--border);background:var(--surface);
-  color:var(--text2);font-family:'Sora',sans-serif;font-size:13px;font-weight:500;
-  cursor:pointer;box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:center;gap:5px;
-  -webkit-appearance:none;min-height:46px;
+/* ══════════════════════════════════════════
+   TOPBAR
+══════════════════════════════════════════ */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between; padding: 4px 0 2px;
 }
-.act-btn.save{background:var(--green);color:#fff;border-color:var(--green);box-shadow:0 3px 10px rgba(42,122,79,.25)}
-
-/* ── RESULTS ── */
-.results{
-  background:var(--surface);border:1.5px solid var(--border);
-  border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-md);
-  max-height:0;transition:max-height .45s cubic-bezier(.4,0,.2,1);
+.logo { display: flex; align-items: center; gap: 11px; }
+.logo-icon {
+  width: 40px; height: 40px; background: var(--accent); border-radius: 12px;
+  display: flex; align-items: center; justify-content: center; font-size: 20px;
+  box-shadow: 0 4px 12px rgba(192,69,30,.35), 0 1px 3px rgba(192,69,30,.2);
+  flex-shrink: 0;
 }
-.results.show{max-height:2000px}
-.res-seg{padding:13px 15px;border-bottom:1px solid var(--border)}
-.res-seg:last-child{border-bottom:none}
-.res-title{font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--text3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:9px}
-.br-row{display:flex;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)}
-.br-row:last-child{border-bottom:none}
-.br-name{flex:1;font-size:13px;font-weight:500}
-.br-paid{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);margin-right:8px}
-.br-diff{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px}
-.br-diff.p{background:rgba(42,122,79,.1);color:var(--green)}
-.br-diff.n{background:rgba(212,82,42,.1);color:var(--accent)}
-.br-diff.z{background:var(--surface2);color:var(--text3)}
-@keyframes payIn{from{opacity:0;transform:translateX(-5px)}to{opacity:1;transform:translateX(0)}}
-.pay-row{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--border)}
-.pay-row:last-child{border-bottom:none}
-.pay-row{animation:payIn .2s ease}
-.pf{font-weight:600;font-size:13px;color:var(--accent)}
-.pa{color:var(--text3);font-size:12px}
-.pt{font-weight:600;font-size:13px;color:var(--green)}
-.pamt{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;background:var(--surface2);padding:4px 10px;border-radius:20px}
-.settled{text-align:center;padding:12px;font-size:14px;color:var(--green);font-weight:600}
-.share-bar{display:flex;gap:8px;padding:13px 15px}
-.s-btn{
-  flex:1;padding:12px;border-radius:var(--rs);border:none;cursor:pointer;
-  font-family:'Sora',sans-serif;font-size:12px;font-weight:600;
-  display:flex;align-items:center;justify-content:center;gap:5px;
-  -webkit-appearance:none;min-height:46px;
-}
-.s-btn.wa{background:#25d366;color:#fff;box-shadow:0 3px 10px rgba(37,211,102,.3)}
-.s-btn.cp{background:var(--surface2);color:var(--text2);border:1.5px solid var(--border);flex:.6}
-
-/* ── HISTORY ── */
-.hist-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-sm)}
-.hist-head{display:flex;align-items:center;justify-content:space-between;padding:14px 15px;cursor:pointer;user-select:none;min-height:52px}
-.hist-head-l{display:flex;align-items:center;gap:9px}
-.hist-head-label{font-size:14px;font-weight:600}
-.hist-badge{background:var(--accent);color:#fff;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px}
-.hist-chevron{color:var(--text3);transition:transform .3s;font-size:11px}
-.hist-card.open .hist-chevron{transform:rotate(180deg)}
-.hist-body{max-height:0;overflow:hidden;transition:max-height .35s cubic-bezier(.4,0,.2,1)}
-.hist-card.open .hist-body{max-height:1500px}
-.hist-inner{padding:0 12px 12px;display:flex;flex-direction:column;gap:8px}
-.hist-empty{text-align:center;padding:24px;color:var(--text3);font-size:13px}
-.hi{background:var(--surface2);border:1.5px solid var(--border);border-radius:13px;overflow:hidden}
-.hi-head{display:flex;align-items:center;padding:11px 13px;justify-content:space-between;cursor:pointer;min-height:52px}
-.hi-name{font-size:13px;font-weight:600}
-.hi-meta{font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-top:2px}
-.hi-r{display:flex;align-items:center;gap:8px;flex-shrink:0}
-.hi-total{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:500;color:var(--accent)}
-.hi-actions{display:flex;gap:4px}
-.hi-btn{
-  padding:5px 11px;border-radius:7px;border:1.5px solid var(--border);background:transparent;
-  font-size:11px;font-family:'Sora',sans-serif;font-weight:500;cursor:pointer;color:var(--text3);
-  -webkit-appearance:none;min-height:36px;
-}
-.hi-btn.load{color:var(--accent);border-color:var(--accent)}
-.hi-detail{max-height:0;overflow:hidden;transition:max-height .3s ease}
-.hi.open .hi-detail{max-height:300px;border-top:1px solid var(--border)}
-.hi-detail-inner{padding:10px 13px 12px;display:flex;flex-direction:column;gap:4px}
-.hi-pay{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text2)}
-.hi-pay .f{color:var(--accent);font-weight:600}
-.hi-pay .t{color:var(--green);font-weight:600}
-.hi-pay .a{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px}
-.clr-btn{
-  width:100%;padding:11px;border-radius:var(--rs);border:1.5px dashed var(--border);
-  background:transparent;color:var(--text3);font-size:12px;font-family:'Sora',sans-serif;
-  cursor:pointer;-webkit-appearance:none;min-height:44px;
+.logo-name { font-size: 18px; font-weight: 700; letter-spacing: -.6px; color: var(--text); }
+.logo-sub {
+  font-size: 10px; color: var(--text3);
+  font-family: 'JetBrains Mono', monospace; margin-top: 1px; letter-spacing: .2px;
 }
 
-/* ── TOAST ── */
-#toast{
-  position:fixed;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);left:50%;
-  transform:translateX(-50%) translateY(70px);
-  background:var(--text);color:var(--bg);
-  padding:11px 22px;border-radius:50px;
-  font-size:13px;font-weight:500;z-index:9999;
-  transition:transform .35s cubic-bezier(.34,1.56,.64,1);
-  white-space:nowrap;pointer-events:none;box-shadow:var(--shadow-md);
+/* ══════════════════════════════════════════
+   SESSION BAR
+══════════════════════════════════════════ */
+.session-bar { display: flex; gap: 8px; }
+.session-bar input {
+  flex: 1; padding: 13px 14px; border-radius: var(--rs);
+  border: 1.5px solid var(--border); background: var(--surface);
+  color: var(--text); font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 500;
+  outline: none; box-shadow: var(--shadow-xs);
+  transition: border-color .2s, box-shadow .2s;
+  -webkit-appearance: none; min-width: 0;
 }
-#toast.show{transform:translateX(-50%) translateY(0)}
+.session-bar input:focus {
+  border-color: var(--accent); box-shadow: 0 0 0 3px rgba(192,69,30,.12);
+}
+.session-bar input::placeholder { color: var(--text3); font-weight: 400; }
+.currency-sel {
+  padding: 0 28px 0 12px; border-radius: var(--rs); min-width: 76px;
+  border: 1.5px solid var(--border); background: var(--surface);
+  color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500;
+  outline: none; cursor: pointer;
+  box-shadow: var(--shadow-xs);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23b8aea1' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 9px center;
+  -webkit-appearance: none; appearance: none;
+  transition: border-color .2s;
+}
+.currency-sel:focus { border-color: var(--accent); }
+
+/* ══════════════════════════════════════════
+   SECTION HEADER
+══════════════════════════════════════════ */
+.sec-head {
+  display: flex; align-items: center; justify-content: space-between; padding: 0 2px;
+}
+.sec-label {
+  font-size: 10px; font-family: 'JetBrains Mono', monospace;
+  color: var(--text3); text-transform: uppercase; letter-spacing: .7px; font-weight: 500;
+}
+.add-person-btn {
+  display: flex; align-items: center; gap: 5px;
+  background: var(--accent); color: #fff; border: none;
+  padding: 10px 18px; border-radius: 22px; cursor: pointer;
+  font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 600;
+  box-shadow: 0 3px 10px rgba(192,69,30,.3);
+  transition: opacity .15s, transform .15s;
+  touch-action: manipulation; min-height: 44px; min-width: 44px;
+}
+.add-person-btn:active { transform: scale(.96); opacity: .9; }
+
+/* ══════════════════════════════════════════
+   PEOPLE LIST
+══════════════════════════════════════════ */
+#peopleList { display: flex; flex-direction: column; gap: 10px; }
+
+/* ══════════════════════════════════════════
+   PERSON CARD  — GPU-accelerated animations
+══════════════════════════════════════════ */
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-8px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.pc {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--r); overflow: hidden; box-shadow: var(--shadow-sm);
+  transition: box-shadow .2s, border-color .2s;
+  will-change: transform;
+}
+.pc.new { animation: slideIn .28s cubic-bezier(.34,1.56,.64,1) both; }
+.pc:focus-within { box-shadow: var(--shadow-md); border-color: var(--accent-m); }
+
+.pc-head {
+  display: flex; align-items: center; border-bottom: 1px solid var(--border);
+  min-height: 50px;
+}
+.pc-avatar {
+  width: 50px; height: 50px; flex-shrink: 0;
+  background: var(--surface2); border-right: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; font-size: 20px;
+}
+.pc-name {
+  flex: 1; padding: 0 12px; height: 50px;
+  background: transparent; border: none; outline: none;
+  color: var(--text); font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 600;
+  min-width: 0;
+  /* Prevent zoom on iOS — font-size must be ≥16px for inputs, use transform trick */
+  font-size: max(16px, 14px);
+}
+.pc-name::placeholder { color: var(--text3); font-weight: 400; }
+.pc-sub {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 500;
+  color: var(--accent); padding: 0 10px; white-space: nowrap; flex-shrink: 0;
+}
+.pc-del {
+  width: 50px; height: 50px; flex-shrink: 0; background: transparent;
+  border: none; border-left: 1px solid var(--border);
+  color: var(--text3); cursor: pointer; font-size: 20px;
+  display: flex; align-items: center; justify-content: center;
+  transition: color .15s, background .15s;
+  touch-action: manipulation; min-height: 44px; min-width: 44px;
+}
+.pc-del:hover { color: var(--accent); background: var(--accent-l); }
+
+/* ══════════════════════════════════════════
+   EXPENSE ROWS
+══════════════════════════════════════════ */
+.exp-row {
+  display: flex; align-items: center; border-bottom: 1px solid var(--border); min-height: 44px;
+}
+.exp-desc {
+  flex: 1.3; padding: 12px; background: transparent; border: none; outline: none;
+  color: var(--text); font-family: 'Sora', sans-serif;
+  font-size: max(16px, 12px); /* ≥16px prevents iOS zoom */
+  border-right: 1px solid var(--border); min-width: 0;
+}
+.exp-desc::placeholder { color: var(--text3); }
+.exp-amt {
+  flex: 0.9; padding: 12px; background: transparent; border: none; outline: none;
+  color: var(--text); font-family: 'JetBrains Mono', monospace;
+  font-size: max(16px, 12px); font-weight: 500;
+  border-right: 1px solid var(--border); min-width: 0;
+  -moz-appearance: textfield;
+}
+.exp-amt::-webkit-outer-spin-button,
+.exp-amt::-webkit-inner-spin-button { -webkit-appearance: none; }
+.exp-amt::placeholder { color: var(--text3); font-family: 'Sora', sans-serif; font-weight: 400; }
+.exp-del {
+  width: 50px; height: 44px; background: transparent; border: none;
+  color: var(--text3); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; font-size: 18px;
+  flex-shrink: 0; transition: color .15s;
+  touch-action: manipulation; min-width: 44px;
+}
+.exp-del:hover { color: var(--accent); }
+
+.add-exp-btn {
+  width: 100%; padding: 11px 14px; background: transparent; border: none;
+  border-top: 1px solid var(--border); color: var(--text3); cursor: pointer;
+  font-family: 'Sora', sans-serif; font-size: 12px; text-align: left;
+  transition: color .15s, background .15s;
+  touch-action: manipulation; min-height: 44px;
+}
+.add-exp-btn:hover { color: var(--accent); background: var(--accent-l); }
+
+/* ══════════════════════════════════════════
+   RESULTS  — GPU-friendly height transition
+══════════════════════════════════════════ */
+.results {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--r); overflow: hidden; box-shadow: var(--shadow-md);
+  /* Use opacity+transform instead of max-height for perf — but keep max-height for auto-height */
+  max-height: 0; transition: max-height .5s cubic-bezier(.4,0,.2,1);
+  will-change: max-height;
+}
+.results.show { max-height: 3000px; }
+
+.res-seg { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+.res-seg:last-child { border-bottom: none; }
+.res-title {
+  font-size: 9px; font-family: 'JetBrains Mono', monospace;
+  color: var(--text3); text-transform: uppercase; letter-spacing: .8px;
+  font-weight: 500; margin-bottom: 10px;
+}
+
+/* Breakdown */
+.br-legend {
+  display: flex; gap: 12px; margin-bottom: 8px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--border); flex-wrap: wrap;
+}
+.br-legend-item {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 10px; color: var(--text3); font-family: 'JetBrains Mono', monospace;
+}
+.br-legend-dot { width: 7px; height: 7px; border-radius: 50%; }
+.br-row {
+  display: flex; align-items: center; padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+}
+.br-row:last-child { border-bottom: none; }
+.br-name { flex: 1; font-size: 13px; font-weight: 500; color: var(--text); }
+.br-paid {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  color: var(--text3); margin-right: 8px;
+}
+.br-diff {
+  font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  font-weight: 600; padding: 3px 9px; border-radius: 7px;
+}
+.br-diff.p { background: var(--green-l); color: var(--green); }
+.br-diff.n { background: var(--accent-l); color: var(--accent); }
+.br-diff.z { background: var(--surface2); color: var(--text3); }
+
+/* Who pays who */
+@keyframes payIn {
+  from { opacity: 0; transform: translateX(-4px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.pay-row {
+  display: flex; align-items: center; gap: 8px; padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+  animation: payIn .2s ease both; will-change: opacity, transform;
+}
+.pay-row:last-child { border-bottom: none; }
+.pf { font-weight: 600; font-size: 13px; color: var(--accent); }
+.pa { color: var(--text3); font-size: 13px; }
+.pt { font-weight: 600; font-size: 13px; color: var(--green); }
+.pamt {
+  margin-left: auto; font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; font-weight: 500; background: var(--surface2);
+  padding: 4px 11px; border-radius: 20px; border: 1px solid var(--border);
+  white-space: nowrap;
+}
+.settled {
+  text-align: center; padding: 14px; font-size: 14px;
+  color: var(--green); font-weight: 600; letter-spacing: -.2px;
+}
+
+/* Summary */
+.res-seg .summary {
+  display: flex; align-items: center; justify-content: space-between; padding: 2px 0;
+}
+.sum-label {
+  font-size: 9px; font-family: 'JetBrains Mono', monospace;
+  color: var(--text3); text-transform: uppercase; letter-spacing: .7px; margin-bottom: 3px;
+}
+.sum-total {
+  font-size: 20px; font-family: 'JetBrains Mono', monospace;
+  font-weight: 500; color: var(--accent); letter-spacing: -.5px;
+}
+.sum-chips { display: none; gap: 8px; }
+.sum-chips.show { display: flex; }
+.sum-chip {
+  background: var(--surface2); border-radius: 9px; padding: 5px 10px;
+  text-align: center; border: 1px solid var(--border);
+}
+.sum-chip-l {
+  font-size: 8px; font-family: 'JetBrains Mono', monospace;
+  color: var(--text3); text-transform: uppercase; letter-spacing: .5px;
+}
+.sum-chip-v {
+  font-size: 12px; font-family: 'JetBrains Mono', monospace;
+  font-weight: 500; color: var(--text); margin-top: 1px;
+}
+
+/* Buttons */
+.share-bar { display: flex; gap: 8px; padding: 13px 16px; }
+.s-btn {
+  flex: 1; padding: 14px; border-radius: var(--rs); border: none; cursor: pointer;
+  font-family: 'Sora', sans-serif; font-size: 12px; font-weight: 600;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: opacity .15s, transform .15s;
+  touch-action: manipulation; min-height: 48px;
+}
+.s-btn:active { transform: scale(.97); opacity: .88; }
+.s-btn.wa { background: #25d366; color: #fff; box-shadow: 0 3px 10px rgba(37,211,102,.3); }
+.s-btn.cp { background: var(--surface2); color: var(--text2); border: 1.5px solid var(--border); flex: .55; }
+.act-btn {
+  flex: 1; padding: 14px; border-radius: var(--rs);
+  border: 1.5px solid var(--border); background: var(--surface);
+  color: var(--text2); font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 500;
+  cursor: pointer; box-shadow: var(--shadow-xs);
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  transition: background .15s, transform .15s;
+  touch-action: manipulation; min-height: 48px;
+}
+.act-btn:active { transform: scale(.97); }
+.act-btn:hover { background: var(--surface2); }
+.act-btn.save {
+  background: var(--green); color: #fff; border-color: var(--green);
+  box-shadow: 0 3px 12px rgba(31,110,66,.25);
+}
+.act-btn.save:hover { opacity: .9; }
+
+/* ══════════════════════════════════════════
+   HISTORY
+══════════════════════════════════════════ */
+.hist-card {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--r); overflow: hidden; box-shadow: var(--shadow-sm);
+}
+.hist-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 15px 16px; cursor: pointer; user-select: none; min-height: 54px;
+  touch-action: manipulation;
+}
+.hist-head-l { display: flex; align-items: center; gap: 10px; }
+.hist-head-label { font-size: 14px; font-weight: 600; letter-spacing: -.2px; }
+.hist-badge {
+  background: var(--accent); color: #fff;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 500;
+  padding: 2px 9px; border-radius: 20px;
+}
+.hist-chevron { color: var(--text3); transition: transform .3s; font-size: 11px; }
+.hist-card.open .hist-chevron { transform: rotate(180deg); }
+.hist-body {
+  max-height: 0; overflow: hidden;
+  transition: max-height .35s cubic-bezier(.4,0,.2,1);
+  will-change: max-height;
+}
+.hist-card.open .hist-body { max-height: 2000px; }
+.hist-inner { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 8px; }
+.hist-empty { text-align: center; padding: 28px; color: var(--text3); font-size: 13px; }
+
+.hi { background: var(--bg); border: 1.5px solid var(--border); border-radius: 14px; overflow: hidden; }
+.hi-head {
+  display: flex; align-items: center; padding: 12px 14px;
+  justify-content: space-between; min-height: 54px; gap: 8px;
+  cursor: pointer; touch-action: manipulation; user-select: none;
+}
+.hi-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.hi-meta { font-size: 10px; color: var(--text3); font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
+.hi-r { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.hi-total { font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 500; color: var(--accent); }
+.hi-actions { display: flex; gap: 4px; }
+.hi-btn {
+  padding: 8px 14px; border-radius: 8px; border: 1.5px solid var(--border);
+  background: transparent; font-size: 11px; font-family: 'Sora', sans-serif;
+  font-weight: 500; cursor: pointer; color: var(--text3);
+  touch-action: manipulation; min-height: 36px; min-width: 44px;
+  transition: all .15s;
+}
+.hi-btn.load { color: var(--accent); border-color: var(--accent-m); background: var(--accent-l); }
+.hi-btn.del:hover { color: var(--accent); border-color: var(--accent-m); background: var(--accent-l); }
+
+.hi-detail {
+  max-height: 0; overflow: hidden; transition: max-height .3s ease;
+  will-change: max-height;
+}
+.hi.open .hi-detail { max-height: 400px; border-top: 1px solid var(--border); }
+.hi-detail-inner { padding: 10px 14px 12px; display: flex; flex-direction: column; gap: 5px; }
+.hi-pay { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text2); }
+.hi-pay .f { color: var(--accent); font-weight: 600; }
+.hi-pay .t { color: var(--green); font-weight: 600; }
+.hi-pay .a {
+  margin-left: auto; font-family: 'JetBrains Mono', monospace;
+  font-size: 10px; background: var(--surface2); padding: 2px 8px; border-radius: 6px;
+}
+.clr-btn {
+  width: 100%; padding: 12px; border-radius: var(--rs);
+  border: 1.5px dashed var(--border);
+  background: transparent; color: var(--text3); font-size: 12px;
+  font-family: 'Sora', sans-serif; cursor: pointer;
+  touch-action: manipulation; min-height: 44px; transition: all .15s;
+}
+.clr-btn:hover { color: var(--accent); border-color: var(--accent-m); background: var(--accent-l); }
+
+/* ══════════════════════════════════════════
+   DRAFT INDICATOR
+══════════════════════════════════════════ */
+.draft-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); display: inline-block; margin-left: 6px;
+  opacity: 0; transition: opacity .3s;
+}
+.draft-dot.show { opacity: 1; }
+
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
+#toast {
+  position: fixed;
+  bottom: calc(var(--safe-bottom) + 24px);
+  left: 50%; transform: translateX(-50%) translateY(80px);
+  background: var(--text); color: var(--bg);
+  padding: 12px 24px; border-radius: 50px;
+  font-size: 13px; font-weight: 500; z-index: 9999;
+  transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+  white-space: nowrap; pointer-events: none;
+  box-shadow: 0 8px 30px rgba(0,0,0,.18);
+  will-change: transform;
+}
+#toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ══════════════════════════════════════════
+   FOCUS VISIBLE  (keyboard nav)
+══════════════════════════════════════════ */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+:focus:not(:focus-visible) { outline: none; }
+
+/* ══════════════════════════════════════════
+   ACCESSIBILITY — skip link
+══════════════════════════════════════════ */
+.skip-link {
+  position: absolute; top: -100px; left: 16px; z-index: 10000;
+  background: var(--accent); color: #fff; padding: 8px 16px; border-radius: 8px;
+  font-size: 14px; font-weight: 600; text-decoration: none;
+  transition: top .2s;
+}
+.skip-link:focus { top: calc(var(--safe-top) + 8px); }
+
+/* Prevent horizontal overflow everywhere */
+* { max-width: 100%; }
+input, select, button { max-width: 100%; }
 </style>
 </head>
 <body>
 
-<!-- INSTALL BANNER -->
-<div id="installBanner">
-  <div class="ib-icon">🧾</div>
+<a class="skip-link" href="#peopleList">Skip to people list</a>
+
+<!-- Install Banner (iOS Safari only) -->
+<div id="installBanner" role="banner" aria-label="Install app banner">
+  <div class="ib-icon" aria-hidden="true">🧾</div>
   <div class="ib-body">
     <div class="ib-title">Add Split to Home Screen</div>
     <div class="ib-step"><span>1.</span><span>Tap the <b>Share ⎋</b> button at the bottom of Safari</span></div>
     <div class="ib-step"><span>2.</span><span>Tap <b>"Add to Home Screen"</b></span></div>
     <div class="ib-step"><span>3.</span><span>Tap <b>Add</b> — works like a native app!</span></div>
   </div>
-  <button class="ib-close" id="ibClose" type="button">×</button>
+  <button class="ib-close" id="ibClose" type="button" aria-label="Dismiss install banner">×</button>
 </div>
 
-<div class="wrap">
+<main class="wrap" role="main">
 
-  <!-- TOPBAR -->
+  <!-- Topbar -->
   <div class="topbar">
-    <div class="logo">
-      <div class="logo-icon">🧾</div>
+    <div class="logo" role="heading" aria-level="1">
+      <div class="logo-icon" aria-hidden="true">🧾</div>
       <div>
         <div class="logo-name">Split</div>
         <div class="logo-sub">expense splitter</div>
       </div>
     </div>
-    <button class="theme-btn" id="themeBtn" type="button">🌙</button>
+    <span class="draft-dot" id="draftDot" aria-label="Unsaved draft" title="Unsaved draft"></span>
   </div>
 
-  <!-- HOW TO USE -->
-  <div class="how-banner" id="howBanner">
+  <!-- How-to banner -->
+  <div class="how-banner" id="howBanner" role="note" aria-label="How to use Split">
     <div class="how-head">
-      <span class="how-head-icon">💡</span>
+      <span class="how-head-icon" aria-hidden="true">💡</span>
       <span class="how-head-title">How to use Split</span>
-      <button class="how-dismiss" id="howDismiss" type="button">×</button>
+      <button class="how-dismiss" id="howDismiss" type="button" aria-label="Dismiss tips">×</button>
     </div>
     <div class="how-steps">
-      <div class="how-step"><div class="how-num">1</div><div class="how-text">Give your session a name — like <b>Trip</b> or <b>Dinner Friday</b></div></div>
-      <div class="how-step"><div class="how-num">2</div><div class="how-text">Type a <b>person's name</b> — the next one appears automatically as you type</div></div>
-      <div class="how-step"><div class="how-num">3</div><div class="how-text">Enter their <b>amount</b>. Tap <b>+ Add item</b> if they paid for multiple things</div></div>
-      <div class="how-step"><div class="how-num">4</div><div class="how-text">If someone <b>paid nothing</b>, just leave the amount empty — they still split the bill</div></div>
-      <div class="how-step"><div class="how-num">5</div><div class="how-text">Results update <b>live</b> — share via WhatsApp or copy, then tap <b>💾 Save</b> to keep it</div></div>
+      <div class="how-step"><div class="how-num" aria-hidden="true">1</div><div class="how-text">Give your session a name — like <b>Trip</b> or <b>Dinner Friday</b></div></div>
+      <div class="how-step"><div class="how-num" aria-hidden="true">2</div><div class="how-text">Type a <b>person's name</b> — the next one appears automatically as you type</div></div>
+      <div class="how-step"><div class="how-num" aria-hidden="true">3</div><div class="how-text">Enter their <b>amount paid</b>. Tap <b>+ Add item</b> for multiple expenses</div></div>
+      <div class="how-step"><div class="how-num" aria-hidden="true">4</div><div class="how-text">If someone <b>paid nothing</b>, leave amount empty — they still split the bill</div></div>
+      <div class="how-step"><div class="how-num" aria-hidden="true">5</div><div class="how-text">Results update <b>live</b> — green = gets money back, orange = owes</div></div>
     </div>
   </div>
 
-  <!-- SESSION -->
+  <!-- Session name + currency -->
   <div class="session-bar">
-    <input id="sessionName" placeholder="Session name — e.g. Trip" autocomplete="off" />
-    <select class="currency-sel" id="currency">
+    <input id="sessionName" placeholder="Session name — e.g. Trip to Qatar"
+           autocomplete="off" autocorrect="off" spellcheck="false"
+           aria-label="Session name" />
+    <select class="currency-sel" id="currency" aria-label="Currency">
       <option>QAR</option><option>USD</option><option>EUR</option>
       <option>GBP</option><option>INR</option><option>AED</option><option>SAR</option>
     </select>
   </div>
 
-  <!-- SUMMARY -->
-  <div class="summary" id="summary">
-    <div>
-      <div class="sum-label">Total spent</div>
-      <div class="sum-total" id="sumTotal">—</div>
-    </div>
-    <div class="sum-chips" id="sumChips">
-      <div class="sum-chip"><div class="sum-chip-l">Each</div><div class="sum-chip-v" id="sumEach">—</div></div>
-      <div class="sum-chip"><div class="sum-chip-l">People</div><div class="sum-chip-v" id="sumPeople">0</div></div>
-    </div>
-  </div>
-
-  <!-- PEOPLE -->
+  <!-- People section -->
   <div class="sec-head">
-    <span class="sec-label">People</span>
-    <button class="add-person-btn" id="addPersonBtn" type="button">+ Add person</button>
+    <span class="sec-label" id="peopleLabel">People &amp; amounts paid</span>
+    <button class="add-person-btn" id="addPersonBtn" type="button"
+            aria-label="Add a person">+ Add person</button>
   </div>
 
-  <div id="peopleList"></div>
+  <div id="peopleList" aria-label="People list" aria-live="polite"></div>
 
-  <!-- ACTIONS -->
-  <div class="action-bar">
-    <button class="act-btn" id="clearBtn" type="button">✕ Clear</button>
-    <button class="act-btn save" id="saveBtn" type="button">💾 Save session</button>
-  </div>
-
-  <!-- RESULTS -->
-  <div class="results" id="results">
+  <!-- Results -->
+  <section class="results" id="results" aria-label="Split results" aria-live="polite">
     <div class="res-seg">
       <div class="res-title">Breakdown</div>
-      <div id="bdList"></div>
+      <div class="br-legend" aria-hidden="true">
+        <div class="br-legend-item"><div class="br-legend-dot" style="background:var(--green)"></div>paid more — gets back</div>
+        <div class="br-legend-item"><div class="br-legend-dot" style="background:var(--accent)"></div>paid less — owes</div>
+      </div>
+      <div id="bdList" role="list"></div>
     </div>
     <div class="res-seg">
       <div class="res-title">Who pays who</div>
-      <div id="payList"></div>
+      <div id="payList" role="list"></div>
+    </div>
+    <div class="res-seg">
+      <div class="summary" id="summary">
+        <div>
+          <div class="sum-label">Total spent</div>
+          <div class="sum-total" id="sumTotal" aria-live="polite">—</div>
+        </div>
+        <div class="sum-chips" id="sumChips">
+          <div class="sum-chip">
+            <div class="sum-chip-l">Each owes</div>
+            <div class="sum-chip-v" id="sumEach">—</div>
+          </div>
+          <div class="sum-chip">
+            <div class="sum-chip-l">People</div>
+            <div class="sum-chip-v" id="sumPeople">0</div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="share-bar">
-      <button class="s-btn wa" id="waBtn" type="button">💬 WhatsApp</button>
-      <button class="s-btn cp" id="cpBtn" type="button">⎘ Copy</button>
+      <button class="s-btn wa" id="waBtn" type="button" aria-label="Share via WhatsApp">💬 WhatsApp</button>
+      <button class="s-btn cp" id="cpBtn" type="button" aria-label="Copy results to clipboard">⎘ Copy</button>
     </div>
-  </div>
+    <div class="share-bar" style="padding-top:0">
+      <button class="act-btn" id="clearBtn" type="button" aria-label="Clear all data">✕ Clear</button>
+      <button class="act-btn save" id="saveBtn" type="button" aria-label="Save session to history">💾 Save session</button>
+    </div>
+  </section>
 
-  <!-- HISTORY -->
-  <div class="hist-card" id="histCard">
-    <div class="hist-head" id="histToggle">
+  <!-- History -->
+  <div class="hist-card" id="histCard" role="region" aria-label="Saved sessions history">
+    <div class="hist-head" id="histToggle" role="button"
+         aria-expanded="false" aria-controls="histBody" tabindex="0">
       <div class="hist-head-l">
-        <span>🕐</span>
+        <span aria-hidden="true">🕐</span>
         <span class="hist-head-label">History</span>
-        <span class="hist-badge" id="histCount">0</span>
+        <span class="hist-badge" id="histCount" aria-label="saved sessions">0</span>
       </div>
-      <span class="hist-chevron">▼</span>
+      <span class="hist-chevron" aria-hidden="true">▼</span>
     </div>
-    <div class="hist-body">
+    <div class="hist-body" id="histBody">
       <div class="hist-inner" id="histInner"></div>
     </div>
   </div>
 
-</div>
-<div id="toast"></div>
+</main>
+
+<div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <script>
-// ── Utils
-const $=id=>document.getElementById(id);
-const round=n=>Math.round(n*100)/100;
-const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-const AVATARS=['🧑','😊','👩','🧔','👦','👧','😎','🤓','🙂','🫡'];
-const av=i=>AVATARS[i%AVATARS.length];
-let uid=0; const newId=()=>String(++uid);
+'use strict';
+/* ══════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════ */
+const $ = id => document.getElementById(id);
+const round2 = n => Math.round(n * 100) / 100;
+const esc = s => String(s)
+  .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+  .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-// ── Theme
-let dark=JSON.parse(localStorage.getItem('th_dark')??JSON.stringify(matchMedia('(prefers-color-scheme:dark)').matches));
-function applyTheme(){document.body.classList.toggle('dark',dark);$('themeBtn').textContent=dark?'☀️':'🌙';}
-applyTheme();
-$('themeBtn').addEventListener('click',()=>{dark=!dark;applyTheme();localStorage.setItem('th_dark',dark);});
+const AVATARS = ['🧑','😊','👩','🧔','👦','👧','😎','🤓','🙂','🫡'];
+const av = i => AVATARS[i % AVATARS.length];
 
-// ── Install Banner
-(function(){
-  const standalone=window.navigator.standalone===true||matchMedia('(display-mode:standalone)').matches;
-  if(standalone){return;}
-  if(localStorage.getItem('ib_off')==='1')return;
-  // iPhone only: must be iOS + Safari (not Chrome/Firefox/other on iOS)
-  const ua=navigator.userAgent;
-  const isIphone=/iphone/i.test(ua);
-  const isSafari=/safari/i.test(ua)&&!/crios|fxios|opios|mercury|edgios/i.test(ua);
-  if(!isIphone||!isSafari)return;
-  $('installBanner').classList.add('visible');
-  // close button — both click and touchend for reliability
-  function closeBanner(e){
-    e.preventDefault();e.stopPropagation();
-    $('installBanner').classList.remove('visible');
-    localStorage.setItem('ib_off','1');
-  }
-  $('ibClose').addEventListener('click',closeBanner);
-  $('ibClose').addEventListener('touchend',closeBanner);
-})();
+let _uid = 0;
+const newId = () => String(++_uid);
 
-// ── Data
-let people=[];
-let history=JSON.parse(localStorage.getItem('split_h3')||'[]');
-let calcResult=null;
-let autoTimer=null;
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
+let people = [];
+let history_list = [];
+let calcResult = null;
+let autoTimer = null;
+let activeSessionId = null;
+let draftTimer = null;
+const DRAFT_KEY = 'split_draft_v2';
+const HIST_KEY  = 'split_h3';
 
-function newExp(){return{id:newId(),desc:'',amount:''};}
-function newPerson(idx){return{id:newId(),name:'',avatar:av(idx),expenses:[newExp()]};}
-
-function personTotal(p){
-  return round(p.expenses.reduce((s,e)=>{const v=parseFloat(e.amount);return s+(isNaN(v)?0:v);},0));
+/* ══════════════════════════════════════════
+   SAFE localStorage
+══════════════════════════════════════════ */
+function lsGet(key, fallback) {
+  try { const v = localStorage.getItem(key); return v != null ? JSON.parse(v) : fallback; }
+  catch { return fallback; }
+}
+function lsSet(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); return true; }
+  catch { return false; }
+}
+function lsDel(key) {
+  try { localStorage.removeItem(key); } catch {}
 }
 
-// ── Live Calculate (never touches DOM of people list)
-function calc(){
-  const cur=$('currency').value;
-  const valid=people.filter(p=>p.name.trim()).map(p=>({name:p.name.trim(),amount:personTotal(p)}));
-  if(!valid.length||valid.every(p=>p.amount===0)){
-    $('sumTotal').textContent='—';$('sumTotal').classList.remove('live');
-    $('summary').classList.remove('live');$('sumChips').classList.remove('show');
-    $('results').classList.remove('show');calcResult=null;return;
+/* ══════════════════════════════════════════
+   POINTER EVENT HELPER
+   Prevents double-fire from both pointerup & click on iOS
+══════════════════════════════════════════ */
+function onTap(el, fn) {
+  // Use pointerup for fast response; preventDefault stops
+  // the subsequent click from also firing.
+  el.addEventListener('pointerup', e => {
+    // Only fire on primary (left/touch) pointer
+    if (e.isPrimary === false) return;
+    // Ignore if pointer moved significantly (scrolling)
+    e.currentTarget._pointerMoved = false;
+    fn(e);
+  });
+  // Fallback for older browsers
+  if (!window.PointerEvent) {
+    el.addEventListener('click', fn);
   }
-  const total=round(valid.reduce((s,p)=>s+p.amount,0));
-  const share=round(total/valid.length);
-  $('summary').classList.add('live');
-  $('sumTotal').textContent=total.toFixed(2)+' '+cur;$('sumTotal').classList.add('live');
+}
+
+/* ══════════════════════════════════════════
+   FACTORY
+══════════════════════════════════════════ */
+function newExp()    { return { id: newId(), desc: '', amount: '' }; }
+function newPerson(idx) { return { id: newId(), name: '', avatar: av(idx), expenses: [newExp()] }; }
+function personTotal(p) {
+  return round2(p.expenses.reduce((s, e) => {
+    const v = parseFloat(e.amount);
+    return s + (isNaN(v) || v < 0 ? 0 : v);
+  }, 0));
+}
+
+/* ══════════════════════════════════════════
+   DRAFT AUTO-SAVE
+══════════════════════════════════════════ */
+function scheduleDraft() {
+  clearTimeout(draftTimer);
+  draftTimer = setTimeout(saveDraft, 800);
+  $('draftDot').classList.add('show');
+}
+
+function saveDraft() {
+  const draft = {
+    sessionName: $('sessionName').value,
+    currency: $('currency').value,
+    activeSessionId,
+    people: people.map(p => ({
+      id: p.id, name: p.name, avatar: p.avatar,
+      expenses: p.expenses.map(e => ({ id: e.id, desc: e.desc, amount: e.amount }))
+    }))
+  };
+  lsSet(DRAFT_KEY, draft);
+  $('draftDot').classList.remove('show');
+}
+
+function restoreDraft() {
+  const draft = lsGet(DRAFT_KEY, null);
+  if (!draft || !Array.isArray(draft.people) || !draft.people.length) return false;
+  // Restore
+  if (draft.sessionName) $('sessionName').value = draft.sessionName;
+  if (draft.currency)    $('currency').value    = draft.currency;
+  activeSessionId = draft.activeSessionId || null;
+
+  people = [];
+  $('peopleList').innerHTML = '';
+  draft.people.forEach(p => {
+    const person = {
+      id: newId(), name: p.name || '', avatar: p.avatar || av(people.length),
+      expenses: (p.expenses || [newExp()]).map(e => ({ id: newId(), desc: e.desc || '', amount: e.amount || '' }))
+    };
+    if (!person.expenses.length) person.expenses = [newExp()];
+    people.push(person);
+    $('peopleList').appendChild(makeCard(person, false));
+  });
+  calc();
+  return true;
+}
+
+/* ══════════════════════════════════════════
+   CALCULATION
+══════════════════════════════════════════ */
+function calc() {
+  const cur = $('currency').value;
+  const valid = people
+    .filter(p => p.name.trim())
+    .map(p => ({ name: p.name.trim(), amount: personTotal(p) }));
+
+  if (!valid.length) { resetResults(); return; }
+
+  const total = round2(valid.reduce((s, p) => s + p.amount, 0));
+  if (total === 0) { resetResults(); return; }
+
+  const n = valid.length;
+  const share = round2(total / n);
+
+  $('sumTotal').textContent  = fmt(total, cur);
   $('sumChips').classList.add('show');
-  $('sumEach').textContent=share.toFixed(2);$('sumPeople').textContent=valid.length;
+  $('sumEach').textContent   = fmt(share, cur);
+  $('sumPeople').textContent = n;
 
   // Breakdown
-  const bd=$('bdList');bd.innerHTML='';
-  let payers=[],receivers=[];
-  valid.forEach(p=>{
-    const d=round(p.amount-share);
-    if(d>0.01)receivers.push({name:p.name,amount:d});
-    if(d<-0.01)payers.push({name:p.name,amount:-d});
-    const r=document.createElement('div');r.className='br-row';
-    const cls=d>0.01?'p':d<-0.01?'n':'z';
-    r.innerHTML=`<span class="br-name">${esc(p.name)}</span><span class="br-paid">${p.amount.toFixed(2)}</span><span class="br-diff ${cls}">${d>0.01?'+':''}${d.toFixed(2)}</span>`;
+  const bd = $('bdList');
+  bd.innerHTML = '';
+  const creditors = [], debtors = [];
+  valid.forEach(p => {
+    const diff = round2(p.amount - share);
+    if (diff >  0.005) creditors.push({ name: p.name, amount: diff });
+    if (diff < -0.005) debtors.push({ name: p.name, amount: -diff });
+    const r  = document.createElement('div');
+    r.className  = 'br-row';
+    r.setAttribute('role','listitem');
+    const cls  = diff > 0.005 ? 'p' : diff < -0.005 ? 'n' : 'z';
+    const sign = diff > 0.005 ? '+' : '';
+    r.innerHTML =
+      `<span class="br-name">${esc(p.name)}</span>` +
+      `<span class="br-paid">${p.amount.toFixed(2)}</span>` +
+      `<span class="br-diff ${cls}" aria-label="${diff > 0 ? 'gets back' : 'owes'} ${Math.abs(diff).toFixed(2)}">${sign}${diff.toFixed(2)}</span>`;
     bd.appendChild(r);
   });
 
-  // Payments
-  const pl=$('payList');pl.innerHTML='';
-  if(!payers.length&&!receivers.length){pl.innerHTML='<div class="settled">✓ All settled up!</div>';}
-  else{
-    const p2=payers.map(x=>({...x})),r2=receivers.map(x=>({...x}));
-    let pi=0,ri=0;
-    while(pi<p2.length&&ri<r2.length){
-      const a=round(Math.min(p2[pi].amount,r2[ri].amount));
-      const row=document.createElement('div');row.className='pay-row';
-      row.innerHTML=`<span class="pf">${esc(p2[pi].name)}</span><span class="pa">→</span><span class="pt">${esc(r2[ri].name)}</span><span class="pamt">${a.toFixed(2)} ${cur}</span>`;
-      pl.appendChild(row);
-      p2[pi].amount=round(p2[pi].amount-a);r2[ri].amount=round(r2[ri].amount-a);
-      if(p2[pi].amount<=0.01)pi++;if(r2[ri].amount<=0.01)ri++;
+  // Who pays who
+  const pl = $('payList');
+  pl.innerHTML = '';
+  if (!debtors.length && !creditors.length) {
+    pl.innerHTML = '<div class="settled" role="status">✓ All settled up!</div>';
+  } else {
+    const D = debtors.map(x => ({...x})), C = creditors.map(x => ({...x}));
+    let di = 0, ci = 0;
+    while (di < D.length && ci < C.length) {
+      const a = round2(Math.min(D[di].amount, C[ci].amount));
+      if (a > 0.005) {
+        const row = document.createElement('div');
+        row.className = 'pay-row';
+        row.setAttribute('role','listitem');
+        row.innerHTML =
+          `<span class="pf">${esc(D[di].name)}</span>` +
+          `<span class="pa" aria-hidden="true">→</span>` +
+          `<span class="pt">${esc(C[ci].name)}</span>` +
+          `<span class="pamt">${fmt(a, cur)}</span>`;
+        pl.appendChild(row);
+      }
+      D[di].amount = round2(D[di].amount - a);
+      C[ci].amount = round2(C[ci].amount - a);
+      if (D[di].amount <= 0.005) di++;
+      if (C[ci].amount <= 0.005) ci++;
+    }
+    if (!pl.hasChildNodes()) {
+      pl.innerHTML = '<div class="settled">✓ All settled up!</div>';
     }
   }
+
   $('results').classList.add('show');
-  calcResult={valid,total,share,currency:cur};
+  calcResult = { valid, total, share, currency: cur };
+  scheduleDraft();
 }
 
-// ── Render a single person card (no full list re-render)
-function makeCard(person,isNew){
-  const card=document.createElement('div');
-  card.className='pc'+(isNew?' new':'');
-  card.id='pc-'+person.id;
+function fmt(n, cur) { return n.toFixed(2) + ' ' + cur; }
 
-  // HEAD
-  const head=document.createElement('div');head.className='pc-head';
-  const avEl=document.createElement('div');avEl.className='pc-avatar';avEl.textContent=person.avatar;
-  
-  const nameInp=document.createElement('input');
-  nameInp.className='pc-name';nameInp.placeholder='Name';
-  nameInp.value=person.name;nameInp.type='text';
-  nameInp.autocomplete='off';nameInp.autocorrect='off';nameInp.autocapitalize='words';
-  nameInp.spellcheck=false;
+function resetResults() {
+  $('sumTotal').textContent = '—';
+  $('sumChips').classList.remove('show');
+  $('results').classList.remove('show');
+  calcResult = null;
+  scheduleDraft();
+}
 
-  const sub=document.createElement('span');sub.className='pc-sub';sub.id='sub-'+person.id;
-  const t=personTotal(person);sub.textContent=t>0?t.toFixed(2)+' '+$('currency').value:'';
+/* ══════════════════════════════════════════
+   MAKE PERSON CARD
+══════════════════════════════════════════ */
+function makeCard(person, isNew) {
+  const card = document.createElement('div');
+  card.className = 'pc' + (isNew ? ' new' : '');
+  card.id = 'pc-' + person.id;
+  card.setAttribute('role', 'group');
+  card.setAttribute('aria-label', person.name || 'New person');
 
-  const del=document.createElement('button');del.className='pc-del';del.type='button';del.textContent='×';
+  // ── HEAD ──
+  const head = document.createElement('div');
+  head.className = 'pc-head';
 
-  head.appendChild(avEl);head.appendChild(nameInp);head.appendChild(sub);head.appendChild(del);
+  const avEl = document.createElement('div');
+  avEl.className = 'pc-avatar';
+  avEl.textContent = person.avatar;
+  avEl.setAttribute('aria-hidden','true');
 
-  // EXPENSES
-  const expWrap=document.createElement('div');expWrap.id='ew-'+person.id;
+  const nameInp = document.createElement('input');
+  nameInp.className = 'pc-name';
+  nameInp.placeholder = 'Name';
+  nameInp.value = person.name;
+  nameInp.type  = 'text';
+  nameInp.autocomplete  = 'off';
+  nameInp.autocorrect   = 'off';
+  nameInp.autocapitalize = 'words';
+  nameInp.spellcheck    = false;
+  nameInp.setAttribute('aria-label', 'Person name');
 
-  function renderExps(){
-    expWrap.innerHTML='';
-    person.expenses.forEach(exp=>{
-      const row=document.createElement('div');row.className='exp-row';
-      const dc=document.createElement('input');
-      dc.className='exp-desc';dc.placeholder='What for? (optional)';
-      dc.value=exp.desc;dc.type='text';dc.autocomplete='off';dc.autocorrect='off';
-      const am=document.createElement('input');
-      am.className='exp-amt';am.placeholder='Amount';
-      am.value=exp.amount;am.type='number';am.inputMode='decimal';
-      const xb=document.createElement('button');xb.className='exp-del';xb.type='button';xb.textContent='×';
+  const sub = document.createElement('span');
+  sub.className = 'pc-sub';
+  sub.id = 'sub-' + person.id;
+  sub.setAttribute('aria-live','polite');
+  updateSub(sub, person);
 
-      dc.addEventListener('input',e=>{exp.desc=e.target.value;});
-      am.addEventListener('input',e=>{
-        exp.amount=e.target.value;
-        const tt=personTotal(person);
-        const s=$('sub-'+person.id);
-        if(s)s.textContent=tt>0?tt.toFixed(2)+' '+$('currency').value:'';
+  const del = document.createElement('button');
+  del.className = 'pc-del';
+  del.type = 'button';
+  del.textContent = '×';
+  del.setAttribute('aria-label', 'Remove person');
+
+  head.append(avEl, nameInp, sub, del);
+
+  // ── EXPENSE WRAP ──
+  const expWrap = document.createElement('div');
+  expWrap.id = 'ew-' + person.id;
+
+  function renderExps() {
+    expWrap.innerHTML = '';
+    person.expenses.forEach(exp => {
+      const row = document.createElement('div');
+      row.className = 'exp-row';
+
+      const dc = document.createElement('input');
+      dc.className = 'exp-desc';
+      dc.placeholder = 'What for? (optional)';
+      dc.value = exp.desc;
+      dc.type = 'text';
+      dc.autocomplete = 'off';
+      dc.autocorrect  = 'off';
+      dc.setAttribute('aria-label', 'Expense description');
+
+      const am = document.createElement('input');
+      am.className = 'exp-amt';
+      am.placeholder = 'Amount paid';
+      am.value = exp.amount;
+      am.type = 'number';
+      am.inputMode = 'decimal';
+      am.min = '0';
+      am.step = 'any';
+      am.setAttribute('aria-label', 'Amount paid');
+
+      const xb = document.createElement('button');
+      xb.className = 'exp-del';
+      xb.type = 'button';
+      xb.textContent = '×';
+      xb.setAttribute('aria-label', 'Remove expense');
+
+      dc.addEventListener('input', e => {
+        exp.desc = e.target.value;
+        scheduleDraft();
+      });
+
+      am.addEventListener('input', e => {
+        const raw = e.target.value;
+        // Validate: reject negative
+        if (parseFloat(raw) < 0) { e.target.value = ''; exp.amount = ''; }
+        else exp.amount = raw;
+        updateSub(sub, person);
         calc();
       });
-      xb.addEventListener('click',()=>{
-        if(person.expenses.length===1){person.expenses=[newExp()];}
-        else{person.expenses=person.expenses.filter(e=>e.id!==exp.id);}
-        renderExps();calc();
-      });
-      xb.addEventListener('touchend',e=>{e.preventDefault();xb.click();});
 
-      row.appendChild(dc);row.appendChild(am);row.appendChild(xb);
+      onTap(xb, e => {
+        e.stopPropagation();
+        if (person.expenses.length === 1) {
+          exp.desc = ''; exp.amount = '';
+          dc.value = ''; am.value = '';
+          updateSub(sub, person);
+          calc();
+        } else {
+          person.expenses = person.expenses.filter(ex => ex.id !== exp.id);
+          renderExps();
+          calc();
+        }
+      });
+
+      row.append(dc, am, xb);
       expWrap.appendChild(row);
     });
-    // add item btn
-    const ab=document.createElement('button');ab.className='add-exp-btn';ab.type='button';ab.textContent='+ Add item';
-    ab.addEventListener('click',()=>{
-      person.expenses.push(newExp());renderExps();calc();
-      setTimeout(()=>{const rows=expWrap.querySelectorAll('.exp-row');rows[rows.length-1]?.querySelector('.exp-desc')?.focus();},30);
+
+    // Add item button
+    const ab = document.createElement('button');
+    ab.className = 'add-exp-btn';
+    ab.type = 'button';
+    ab.textContent = '+ Add item';
+    ab.setAttribute('aria-label', 'Add another expense item');
+
+    onTap(ab, e => {
+      e.stopPropagation();
+      person.expenses.push(newExp());
+      renderExps();
+      calc();
+      // Focus new desc input after render
+      requestAnimationFrame(() => {
+        const rows = expWrap.querySelectorAll('.exp-row');
+        rows[rows.length - 1]?.querySelector('.exp-desc')?.focus();
+      });
     });
-    ab.addEventListener('touchend',e=>{e.preventDefault();ab.click();});
+
     expWrap.appendChild(ab);
   }
+
   renderExps();
+  card.append(head, expWrap);
 
-  card.appendChild(head);card.appendChild(expWrap);
-
-  // ── Name input handler (no DOM re-render — just update state + calc)
-  nameInp.addEventListener('input',e=>{
-    person.name=e.target.value;
+  // ── NAME input ──
+  nameInp.addEventListener('input', e => {
+    person.name = e.target.value;
+    card.setAttribute('aria-label', person.name || 'New person');
     calc();
-    // auto-add: only if this is the last person and name is non-empty
+
+    // Auto-add next person after typing
     clearTimeout(autoTimer);
-    if(e.target.value.trim()&&people[people.length-1]?.id===person.id){
-      autoTimer=setTimeout(()=>{
-        if(people[people.length-1]?.id===person.id&&people[people.length-1]?.name.trim()){
+    if (e.target.value.trim() && people[people.length - 1]?.id === person.id) {
+      autoTimer = setTimeout(() => {
+        if (people[people.length - 1]?.id === person.id &&
+            people[people.length - 1]?.name.trim()) {
           addPerson(false);
         }
-      },600);
+      }, 700);
     }
   });
 
-  // Delete person
-  del.addEventListener('click',()=>{
-    people=people.filter(p=>p.id!==person.id);
-    card.remove();calc();
+  // ── DELETE person ──
+  onTap(del, e => {
+    e.stopPropagation();
+    // Animate out
+    card.style.transition = 'opacity .2s, transform .2s';
+    card.style.opacity = '0';
+    card.style.transform = 'scale(.97)';
+    setTimeout(() => {
+      people = people.filter(p => p.id !== person.id);
+      card.remove();
+      calc();
+    }, 180);
   });
-  del.addEventListener('touchend',e=>{e.preventDefault();del.click();});
 
   return card;
 }
 
-function addPerson(focus=true){
-  const p=newPerson(people.length);
+function updateSub(subEl, person) {
+  const t = personTotal(person);
+  subEl.textContent = t > 0 ? fmt(t, $('currency').value) : '';
+}
+
+/* ══════════════════════════════════════════
+   ADD PERSON
+══════════════════════════════════════════ */
+function addPerson(focusName = true) {
+  const p = newPerson(people.length);
   people.push(p);
-  const card=makeCard(p,true);
+  const card = makeCard(p, true);
   $('peopleList').appendChild(card);
-  if(focus){
-    setTimeout(()=>{
+  if (focusName) {
+    requestAnimationFrame(() => {
       card.querySelector('.pc-name')?.focus();
-      card.scrollIntoView({behavior:'smooth',block:'nearest'});
-    },60);
+      card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
   }
 }
 
-function clearAll(){
+/* ══════════════════════════════════════════
+   CLEAR
+══════════════════════════════════════════ */
+function clearAll() {
   clearTimeout(autoTimer);
-  people=[];calcResult=null;
-  $('sessionName').value='';
-  $('results').classList.remove('show');
-  $('sumTotal').textContent='—';$('sumTotal').classList.remove('live');
-  $('summary').classList.remove('live');$('sumChips').classList.remove('show');
-  $('peopleList').innerHTML='';
-  addPerson(true);
+  people = []; calcResult = null; activeSessionId = null;
+  $('sessionName').value = '';
+  resetResults();
+  $('peopleList').innerHTML = '';
+  lsDel(DRAFT_KEY);
+  $('draftDot').classList.remove('show');
+  addPerson(false);
 }
 
-// ── Button wiring (addEventListener, not onclick — works on all iOS)
-$('addPersonBtn').addEventListener('click',()=>addPerson(true));
-$('addPersonBtn').addEventListener('touchend',e=>{e.preventDefault();addPerson(true);});
-
-$('clearBtn').addEventListener('click',clearAll);
-$('clearBtn').addEventListener('touchend',e=>{e.preventDefault();clearAll();});
-
-$('currency').addEventListener('change',calc);
-
-// ── Build summary text
-function buildText(){
-  if(!calcResult)return null;
-  const{valid,total,share,currency}=calcResult;
-  const name=$('sessionName').value.trim();
-  let t=name?`*${name}*\n`:'';
-  t+=`Total: ${total.toFixed(2)} ${currency}  |  Each: ${share.toFixed(2)} ${currency}\n\n`;
-  const payers=[],receivers=[];
-  valid.forEach(p=>{const d=round(p.amount-share);if(d>0.01)receivers.push({name:p.name,amount:d});if(d<-0.01)payers.push({name:p.name,amount:-d});});
-  const p2=payers.map(x=>({...x})),r2=receivers.map(x=>({...x}));
-  let pi=0,ri=0;
-  while(pi<p2.length&&ri<r2.length){
-    const a=round(Math.min(p2[pi].amount,r2[ri].amount));
-    t+=`${p2[pi].name} → ${r2[ri].name}: ${a.toFixed(2)} ${currency}\n`;
-    p2[pi].amount=round(p2[pi].amount-a);r2[ri].amount=round(r2[ri].amount-a);
-    if(p2[pi].amount<=0.01)pi++;if(r2[ri].amount<=0.01)ri++;
+/* ══════════════════════════════════════════
+   BUILD SHARE TEXT
+══════════════════════════════════════════ */
+function buildText() {
+  if (!calcResult) return null;
+  const { valid, total, share, currency } = calcResult;
+  const name = $('sessionName').value.trim();
+  let t = name ? `*${name}*\n` : '';
+  t += `Total: ${fmt(total, currency)}  |  Each: ${fmt(share, currency)}\n\n`;
+  const creditors = [], debtors = [];
+  valid.forEach(p => {
+    const d = round2(p.amount - share);
+    if (d >  0.005) creditors.push({ name: p.name, amount: d });
+    if (d < -0.005) debtors.push({ name: p.name, amount: -d });
+  });
+  const D = debtors.map(x => ({...x})), C = creditors.map(x => ({...x}));
+  let di = 0, ci = 0;
+  while (di < D.length && ci < C.length) {
+    const a = round2(Math.min(D[di].amount, C[ci].amount));
+    if (a > 0.005) t += `${D[di].name} → ${C[ci].name}: ${fmt(a, currency)}\n`;
+    D[di].amount = round2(D[di].amount - a);
+    C[ci].amount = round2(C[ci].amount - a);
+    if (D[di].amount <= 0.005) di++;
+    if (C[ci].amount <= 0.005) ci++;
   }
   return t;
 }
 
-function doWA(){const t=buildText();if(!t){toast('Add people with amounts first');return;}window.open('https://wa.me/?text='+encodeURIComponent(t),'_blank');}
-function doCopy(){const t=buildText();if(!t){toast('Add people with amounts first');return;}navigator.clipboard.writeText(t).then(()=>toast('Copied ✓'));}
+/* ══════════════════════════════════════════
+   SHARE — WhatsApp
+══════════════════════════════════════════ */
+function doWA() {
+  const t = buildText();
+  if (!t) { toast('Add people with amounts first'); return; }
+  // Use wa.me for both iOS & Android; works better than api.whatsapp.com
+  const url = 'https://wa.me/?text=' + encodeURIComponent(t);
+  window.open(url, '_blank', 'noopener,noreferrer');
+}
 
-$('waBtn').addEventListener('click',doWA);
-$('waBtn').addEventListener('touchend',e=>{e.preventDefault();doWA();});
-$('cpBtn').addEventListener('click',doCopy);
-$('cpBtn').addEventListener('touchend',e=>{e.preventDefault();doCopy();});
-
-// ── Save / History
-function saveHistory(){localStorage.setItem('split_h3',JSON.stringify(history));renderHistory();}
-
-function doSave(){
-  if(!calcResult){toast('Add people with amounts first');return;}
-  const{valid,total,share,currency}=calcResult;
-  const name=$('sessionName').value.trim()||`Session ${history.length+1}`;
-  const payers=[],receivers=[];
-  valid.forEach(p=>{const d=round(p.amount-share);if(d>0.01)receivers.push({name:p.name,amount:d});if(d<-0.01)payers.push({name:p.name,amount:-d});});
-  const payments=[];
-  const p2=payers.map(x=>({...x})),r2=receivers.map(x=>({...x}));
-  let pi=0,ri=0;
-  while(pi<p2.length&&ri<r2.length){
-    const a=round(Math.min(p2[pi].amount,r2[ri].amount));
-    payments.push({from:p2[pi].name,to:r2[ri].name,amount:a});
-    p2[pi].amount=round(p2[pi].amount-a);r2[ri].amount=round(r2[ri].amount-a);
-    if(p2[pi].amount<=0.01)pi++;if(r2[ri].amount<=0.01)ri++;
+/* ══════════════════════════════════════════
+   SHARE — Copy
+   Uses execCommand as fallback for iOS Safari < 13.4
+══════════════════════════════════════════ */
+async function doCopy() {
+  const t = buildText();
+  if (!t) { toast('Add people with amounts first'); return; }
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(t);
+    } else {
+      // Fallback for older iOS Safari
+      const ta = document.createElement('textarea');
+      ta.value = t;
+      ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;pointer-events:none';
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+    }
+    toast('Copied ✓');
+  } catch {
+    toast('Copy failed — please copy manually');
   }
-  history.unshift({id:Date.now(),name,currency,total,share,people:valid,payments,
-    date:new Date().toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}),
-    time:new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})});
-  if(history.length>30)history.pop();
-  saveHistory();
-  if(!$('histCard').classList.contains('open'))$('histCard').classList.add('open');
-  toast('Saved ✓');
 }
-$('saveBtn').addEventListener('click',doSave);
-$('saveBtn').addEventListener('touchend',e=>{e.preventDefault();doSave();});
 
-function loadEntry(id){
-  const e=history.find(h=>h.id===id);if(!e)return;
-  people=[];$('peopleList').innerHTML='';
-  e.people.forEach((p,i)=>{
-    const person={id:newId(),name:p.name,avatar:av(i),expenses:[{id:newId(),desc:'',amount:String(p.amount)}]};
-    people.push(person);
-    $('peopleList').appendChild(makeCard(person,false));
+/* ══════════════════════════════════════════
+   HISTORY HELPERS
+══════════════════════════════════════════ */
+function buildPayments(valid, share) {
+  const creditors = [], debtors = [];
+  valid.forEach(p => {
+    const d = round2(p.amount - share);
+    if (d >  0.005) creditors.push({ name: p.name, amount: d });
+    if (d < -0.005) debtors.push({ name: p.name, amount: -d });
   });
-  $('sessionName').value=e.name;$('currency').value=e.currency;
-  calc();toast('Loaded — edit freely, recalculates live');
-  window.scrollTo({top:0,behavior:'smooth'});
+  const payments = [];
+  const D = debtors.map(x => ({...x})), C = creditors.map(x => ({...x}));
+  let di = 0, ci = 0;
+  while (di < D.length && ci < C.length) {
+    const a = round2(Math.min(D[di].amount, C[ci].amount));
+    if (a > 0.005) payments.push({ from: D[di].name, to: C[ci].name, amount: a });
+    D[di].amount = round2(D[di].amount - a);
+    C[ci].amount = round2(C[ci].amount - a);
+    if (D[di].amount <= 0.005) di++;
+    if (C[ci].amount <= 0.005) ci++;
+  }
+  return payments;
 }
 
-function delEntry(id,el){
-  history=history.filter(h=>h.id!==id);saveHistory();el.closest('.hi').remove();toast('Deleted');
+function saveHistoryToStorage() {
+  lsSet(HIST_KEY, history_list);
+  renderHistory();
 }
 
-function renderHistory(){
-  const inner=$('histInner');$('histCount').textContent=history.length;
-  inner.innerHTML='';
-  if(!history.length){inner.innerHTML='<div class="hist-empty">No saved sessions yet</div>';return;}
-  history.forEach(entry=>{
-    const item=document.createElement('div');item.className='hi';item.dataset.id=entry.id;
-    const pays=entry.payments.map(p=>`<div class="hi-pay"><span class="f">${esc(p.from)}</span><span style="color:var(--text3);font-size:10px">→</span><span class="t">${esc(p.to)}</span><span class="a">${p.amount.toFixed(2)} ${entry.currency}</span></div>`).join('')||'<div style="font-size:11px;color:var(--text3)">All settled!</div>';
-    item.innerHTML=`
-      <div class="hi-head">
-        <div><div class="hi-name">${esc(entry.name)}</div><div class="hi-meta">${entry.date} · ${entry.time} · ${entry.people.length} people</div></div>
+/* ══════════════════════════════════════════
+   SAVE
+══════════════════════════════════════════ */
+function doSave() {
+  if (!calcResult) { toast('Add people with amounts first'); return; }
+  const { valid, total, share, currency } = calcResult;
+  const name = $('sessionName').value.trim() || `Session ${history_list.length + 1}`;
+  const payments = buildPayments(valid, share);
+  const now = new Date();
+  const entry = {
+    id: activeSessionId || now.getTime(),
+    name, currency, total, share, people: valid, payments,
+    date: now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }),
+    time: now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+  };
+
+  if (activeSessionId) {
+    const idx = history_list.findIndex(h => h.id === activeSessionId);
+    if (idx !== -1) history_list[idx] = entry;
+    else history_list.unshift(entry);
+    toast('Updated ✓');
+  } else {
+    history_list.unshift(entry);
+    if (history_list.length > 30) history_list.pop();
+    activeSessionId = entry.id;
+    toast('Saved ✓');
+  }
+  saveHistoryToStorage();
+  // Expand history panel
+  const hc = $('histCard');
+  if (!hc.classList.contains('open')) {
+    hc.classList.add('open');
+    $('histToggle').setAttribute('aria-expanded','true');
+  }
+}
+
+/* ══════════════════════════════════════════
+   LOAD SESSION
+══════════════════════════════════════════ */
+function loadEntry(id) {
+  const e = history_list.find(h => h.id === id);
+  if (!e) return;
+  people = []; $('peopleList').innerHTML = '';
+  e.people.forEach((p, i) => {
+    const person = {
+      id: newId(), name: p.name, avatar: av(i),
+      expenses: [{ id: newId(), desc: '', amount: String(p.amount) }]
+    };
+    people.push(person);
+    $('peopleList').appendChild(makeCard(person, false));
+  });
+  $('sessionName').value = e.name;
+  $('currency').value    = e.currency;
+  activeSessionId = e.id;
+  calc();
+  toast('Loaded — saving will update this session');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ══════════════════════════════════════════
+   DELETE SESSION
+══════════════════════════════════════════ */
+function delEntry(id) {
+  if (activeSessionId === id) activeSessionId = null;
+  history_list = history_list.filter(h => h.id !== id);
+  saveHistoryToStorage();
+  toast('Deleted');
+}
+
+/* ══════════════════════════════════════════
+   RENDER HISTORY
+══════════════════════════════════════════ */
+function renderHistory() {
+  const inner = $('histInner');
+  $('histCount').textContent = history_list.length;
+  inner.innerHTML = '';
+
+  if (!history_list.length) {
+    inner.innerHTML = '<div class="hist-empty">No saved sessions yet</div>';
+    return;
+  }
+
+  history_list.forEach(entry => {
+    const item = document.createElement('div');
+    item.className = 'hi';
+    item.dataset.id = entry.id;
+
+    const pays = entry.payments.length
+      ? entry.payments.map(p =>
+          `<div class="hi-pay">` +
+          `<span class="f">${esc(p.from)}</span>` +
+          `<span style="color:var(--text3);font-size:10px" aria-hidden="true">→</span>` +
+          `<span class="t">${esc(p.to)}</span>` +
+          `<span class="a">${fmt(p.amount, entry.currency)}</span>` +
+          `</div>`
+        ).join('')
+      : '<div style="font-size:11px;color:var(--text3)">All settled!</div>';
+
+    item.innerHTML =
+      `<div class="hi-head" role="button" tabindex="0"
+            aria-label="${esc(entry.name)}, ${fmt(entry.total, entry.currency)}"
+            aria-expanded="false">
+        <div style="min-width:0">
+          <div class="hi-name">${esc(entry.name)}</div>
+          <div class="hi-meta">${esc(entry.date)} · ${esc(entry.time)} · ${entry.people.length} people</div>
+        </div>
         <div class="hi-r">
-          <span class="hi-total">${entry.total.toFixed(2)} ${entry.currency}</span>
+          <span class="hi-total">${fmt(entry.total, entry.currency)}</span>
           <div class="hi-actions">
-            <button class="hi-btn load" type="button">Load</button>
-            <button class="hi-btn" type="button">×</button>
+            <button class="hi-btn load" type="button" aria-label="Load ${esc(entry.name)}">Load</button>
+            <button class="hi-btn del"  type="button" aria-label="Delete ${esc(entry.name)}">×</button>
           </div>
         </div>
       </div>
-      <div class="hi-detail"><div class="hi-detail-inner">${pays}</div></div>`;
-    item.querySelector('.hi-head').addEventListener('click',()=>item.classList.toggle('open'));
-    item.querySelector('.hi-btn.load').addEventListener('click',e=>{e.stopPropagation();loadEntry(entry.id);});
-    item.querySelectorAll('.hi-btn')[1].addEventListener('click',e=>{e.stopPropagation();delEntry(entry.id,e.target);});
+      <div class="hi-detail" aria-hidden="true">
+        <div class="hi-detail-inner">${pays}</div>
+      </div>`;
+
+    const hiHead   = item.querySelector('.hi-head');
+    const loadBtn  = item.querySelector('.hi-btn.load');
+    const delBtn   = item.querySelector('.hi-btn.del');
+    const detail   = item.querySelector('.hi-detail');
+
+    // Toggle expand — only on head itself, not on buttons
+    function toggleExpand(e) {
+      // Do not expand if a button inside was clicked
+      if (e.target.closest('.hi-btn')) return;
+      const open = item.classList.toggle('open');
+      hiHead.setAttribute('aria-expanded', open);
+      detail.setAttribute('aria-hidden', !open);
+    }
+
+    hiHead.addEventListener('click', toggleExpand);
+    hiHead.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleExpand(e); }
+    });
+
+    // Load — stop propagation so card doesn't expand
+    onTap(loadBtn, e => {
+      e.stopPropagation();
+      loadEntry(entry.id);
+    });
+    loadBtn.addEventListener('click', e => e.stopPropagation());
+
+    // Delete
+    onTap(delBtn, e => {
+      e.stopPropagation();
+      delEntry(entry.id);
+      item.style.transition = 'opacity .2s';
+      item.style.opacity = '0';
+      setTimeout(() => item.remove(), 200);
+    });
+    delBtn.addEventListener('click', e => e.stopPropagation());
+
     inner.appendChild(item);
   });
-  const clr=document.createElement('button');clr.className='clr-btn';clr.type='button';clr.textContent='Clear all history';
-  clr.addEventListener('click',()=>{if(confirm('Clear all history?')){history=[];saveHistory();toast('Cleared');}});
+
+  // Clear all button
+  const clr = document.createElement('button');
+  clr.className = 'clr-btn';
+  clr.type = 'button';
+  clr.textContent = 'Clear all history';
+  clr.setAttribute('aria-label','Clear all saved sessions');
+  onTap(clr, () => {
+    if (confirm('Clear all history?')) {
+      history_list = []; activeSessionId = null;
+      saveHistoryToStorage();
+      toast('Cleared');
+    }
+  });
   inner.appendChild(clr);
 }
 
-$('histToggle').addEventListener('click',()=>$('histCard').classList.toggle('open'));
-
-// ── Toast
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
 let toastT;
-function toast(msg){const el=$('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2400);}
+function toast(msg) {
+  const el = $('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastT);
+  toastT = setTimeout(() => el.classList.remove('show'), 2400);
+}
 
-// ── How-to banner
-(function(){
-  if(localStorage.getItem('how_off')==='1'){$('howBanner').classList.add('gone');return;}
-  function dismissHow(e){e.preventDefault();e.stopPropagation();$('howBanner').classList.add('gone');localStorage.setItem('how_off','1');}
-  $('howDismiss').addEventListener('click',dismissHow);
-  $('howDismiss').addEventListener('touchend',dismissHow);
+/* ══════════════════════════════════════════
+   WIRE GLOBAL CONTROLS
+══════════════════════════════════════════ */
+// Add Person
+onTap($('addPersonBtn'), () => addPerson(true));
+
+// Clear
+onTap($('clearBtn'), clearAll);
+
+// Save
+onTap($('saveBtn'), doSave);
+
+// WhatsApp
+onTap($('waBtn'), doWA);
+
+// Copy
+onTap($('cpBtn'), doCopy);
+
+// Currency change → re-calc + update all subtotals
+$('currency').addEventListener('change', () => {
+  // Update all sub-totals
+  people.forEach(p => {
+    const sub = $('sub-' + p.id);
+    if (sub) updateSub(sub, p);
+  });
+  calc();
+});
+
+// Session name → draft
+$('sessionName').addEventListener('input', scheduleDraft);
+
+// History toggle
+$('histToggle').addEventListener('click', () => {
+  const hc = $('histCard');
+  const open = hc.classList.toggle('open');
+  $('histToggle').setAttribute('aria-expanded', open);
+});
+$('histToggle').addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    $('histToggle').click();
+  }
+});
+
+/* ══════════════════════════════════════════
+   INSTALL BANNER  (iOS Safari only)
+══════════════════════════════════════════ */
+(function () {
+  const standalone = window.navigator.standalone === true ||
+    matchMedia('(display-mode:standalone)').matches;
+  if (standalone || lsGet('ib_off', false)) return;
+  const ua = navigator.userAgent;
+  // Must be iPhone/iPad, Safari, not Chrome/Firefox/Opera iOS
+  if (!/iP(hone|ad)/i.test(ua) || !/Safari/i.test(ua) || /CriOS|FxiOS|OPiOS/i.test(ua)) return;
+  $('installBanner').classList.add('visible');
+  onTap($('ibClose'), () => {
+    $('installBanner').classList.remove('visible');
+    lsSet('ib_off', true);
+  });
 })();
 
-// ── Init
+/* ══════════════════════════════════════════
+   HOW-TO BANNER
+══════════════════════════════════════════ */
+(function () {
+  if (lsGet('how_off', false)) {
+    $('howBanner').classList.add('gone');
+    return;
+  }
+  onTap($('howDismiss'), () => {
+    $('howBanner').classList.add('gone');
+    lsSet('how_off', true);
+  });
+})();
+
+/* ══════════════════════════════════════════
+   PWA — Service Worker
+══════════════════════════════════════════ */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(() => {});
+  });
+}
+
+/* ══════════════════════════════════════════
+   VIEWPORT FIX — iOS Safari address bar
+   Uses dvh (dynamic viewport height) in CSS; this JS
+   polyfill sets --vh for older Safari versions.
+══════════════════════════════════════════ */
+function setVH() {
+  document.documentElement.style.setProperty('--vh', window.innerHeight * 0.01 + 'px');
+}
+setVH();
+// Use ResizeObserver instead of resize event to avoid jank
+if (window.ResizeObserver) {
+  new ResizeObserver(setVH).observe(document.documentElement);
+} else {
+  window.addEventListener('resize', setVH, { passive: true });
+}
+
+/* ══════════════════════════════════════════
+   BOOT
+══════════════════════════════════════════ */
+history_list = lsGet(HIST_KEY, []);
+// Validate
+history_list = history_list.filter(h =>
+  h && typeof h === 'object' && h.id && Array.isArray(h.people)
+);
 renderHistory();
-addPerson(false);
+
+// Try restoring draft, else start fresh
+if (!restoreDraft()) {
+  addPerson(false);
+}
 </script>
 </body>
 </html>
